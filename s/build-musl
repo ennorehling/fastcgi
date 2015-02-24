@@ -1,0 +1,5 @@
+#!/bin/sh
+
+CC=musl-gcc
+LDD=musl-ldd
+make counter-cgi
