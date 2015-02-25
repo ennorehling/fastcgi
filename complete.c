@@ -7,6 +7,10 @@
 #include <assert.h>
 #include <critbit.h>
 
+enum {
+    FORMAT_PLAIN,
+    FORMAT_JSON
+};
 
 #define MAXRESULTS 16
 #define MAXWORDLEN 64
@@ -53,9 +57,10 @@ const char * get_prefix(const char *path) {
 
 int process(void *self, FCGX_Request *req)
 {
+    const char * types[] = { "text/plain", "application/json" };
     const void * results[MAXRESULTS];
-    const char *script, *prefix;
-    int nresults;
+    const char *script, *prefix, *accept;
+    int nresults, format = FORMAT_PLAIN;
     payload *pl = (payload *)self;
     assert(self && req);
 
@@ -65,19 +70,38 @@ int process(void *self, FCGX_Request *req)
            FCGX_GetParam("REMOTE_ADDR", req->envp), prefix);
     
     nresults = cb_find_prefix(&pl->words, prefix, strlen(prefix), results, MAXRESULTS, 0);
-    if (nresults) {
-        FCGX_FPrintF(req->out,
-                     "Status: 200 OK\r\n"
-                     "Content-Type: text/plain\r\n"
-                     "\r\n");
-        for (int i=0; i!=nresults; ++i) {
-            const char * str = (const char *)results[i];
-            FCGX_PutS(str, req->out);
+
+    /* really dumb conent negotiation: */
+    accept = FCGX_GetParam("HTTP_ACCEPT", req->envp);
+    if (accept && strstr(accept, "json")) {
+        format = FORMAT_JSON;
+    }
+    
+    FCGX_FPrintF(req->out,
+                 "Status: 200 OK\r\n"
+                 "Content-Type: %s\r\n"
+                 "\r\n", types[format]);
+    if (format==FORMAT_JSON) {
+        FCGX_PutChar('[', req->out);
+    }
+    for (int i=0; i!=nresults; ++i) {
+        const char * str = (const char *)results[i];
+        if (format==FORMAT_JSON) {
+            FCGX_PutChar('"', req->out);
+        }
+        FCGX_PutS(str, req->out);
+        if (format==FORMAT_JSON) {
+            if (nresults==i+1) {
+                FCGX_PutChar('"', req->out);
+            } else {
+                FCGX_PutStr("\",", 2, req->out);
+            }
+        } else {
             FCGX_PutChar('\n', req->out);
         }
-    } else {
-        FCGX_FPrintF(req->out,
-                     "Status: 404 Not Found\r\n\r\n\n");
+    }
+    if (format==FORMAT_JSON) {
+        FCGX_PutStr("]\n", 2, req->out);
     }
     return 0;
 }
