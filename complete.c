@@ -1,4 +1,5 @@
 #include "cgiapp.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,6 +9,7 @@
 
 
 #define MAXRESULTS 16
+#define MAXWORDLEN 64
 
 typedef struct payload {
     critbit_tree words;
@@ -15,15 +17,31 @@ typedef struct payload {
 
 void signal_handler(int sig);
 
+
 int init(void * self)
 {
-    const char * words[] = { "hodor", "houdini", "home", "hate", "foo", "foobar", 0 };
+    const char *wordlist = "/usr/share/dict/words";
     payload *pl = (payload *)self;
+    FILE *F;
     assert(self);
     signal(SIGINT, signal_handler);
     signal(SIGHUP, signal_handler);
-    for (int i=0;words[i];++i) {
-        cb_insert(&pl->words, words[i], 1+strlen(words[i]));
+    printf("reading from %s\n", wordlist);
+    F = fopen(wordlist, "rt");
+    if (F) {
+        int i = 0;
+        for (i=0; !feof(F); ++i) {
+            char word[MAXWORDLEN];
+            size_t len;
+            fgets(word, sizeof(word), F);
+            len = strlen(word);
+            while (isspace(word[len-1])) {
+                --len;
+            }
+            word[len]=0;
+            cb_insert(&pl->words, word, len+1);
+        }
+        printf("read %d words from %s\n", i, wordlist);
     }
     return 0;
 }
