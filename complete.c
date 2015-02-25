@@ -59,28 +59,29 @@ int process(void *self, FCGX_Request *req)
 {
     const char * types[] = { "text/plain", "application/json" };
     const void * results[MAXRESULTS];
-    const char *script, *prefix, *accept;
+    const char *script, *prefix, *accept, *type;
     int nresults, format = FORMAT_PLAIN;
     payload *pl = (payload *)self;
     assert(self && req);
 
     script = FCGX_GetParam("SCRIPT_NAME", req->envp);
     prefix = get_prefix(script);
-    printf("request from %s for %s\n",
-           FCGX_GetParam("REMOTE_ADDR", req->envp), prefix);
-    
     nresults = cb_find_prefix(&pl->words, prefix, strlen(prefix), results, MAXRESULTS, 0);
 
     /* really dumb conent negotiation: */
     accept = FCGX_GetParam("HTTP_ACCEPT", req->envp);
-    if (accept && strstr(accept, "json")) {
+    if (accept && (strstr(accept, "json") || strstr(accept, "javascript"))) {
         format = FORMAT_JSON;
     }
+    type = types[format];
     
+    printf("request from %s for %s as %s, %d results\n",
+           FCGX_GetParam("REMOTE_ADDR", req->envp), prefix, accept, nresults);
+
     FCGX_FPrintF(req->out,
                  "Status: 200 OK\r\n"
                  "Content-Type: %s\r\n"
-                 "\r\n", types[format]);
+                 "\r\n", type);
     if (format==FORMAT_JSON) {
         FCGX_PutChar('[', req->out);
     }
