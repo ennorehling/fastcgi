@@ -1,0 +1,3 @@
+[submodule "critbit"]
+	path = critbit
+	url = https://github.com/badgerman/critbit.git
