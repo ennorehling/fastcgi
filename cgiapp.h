@@ -4,7 +4,7 @@
 typedef struct app {
     void *data;
     int (*init)(void *self);
-    int (*done)(void *self);
+    void (*done)(void *self);
     int (*process)(void *self, FCGX_Request* req);
 } app;
 

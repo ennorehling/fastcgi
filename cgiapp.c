@@ -6,11 +6,11 @@ int main(void)
     FCGX_Init();
     FCGX_InitRequest(&request, 0, 0);
     struct app* app = create_app();
-    app->init(app->data);
+    if (app->init) app->init(app->data);
 
     while(FCGX_Accept_r(&request) == 0) {
         app->process(app->data, &request);
     }
-    app->done(app->data);
+    if (app->done) app->done(app->data);
     return 0;
 }

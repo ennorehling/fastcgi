@@ -1,5 +1,6 @@
+PREFIX = /opt
 CFLAGS = -g -Wall -Werror -Wextra -std=c11 -Icritbit
-PROGRAMS = counter-cgi complete-cgi
+PROGRAMS = counter-cgi complete-cgi keyval-cgi
 
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
 .SECONDARY: complete.o
@@ -23,3 +24,7 @@ cgiapp.a: cgiapp.o critbit/critbit.o
 
 clean:
 	rm -f *~ *.a *.o $(PROGRAMS)
+
+install: $(PROGRAMS)
+	mkdir -p $(PREFIX)/bin
+	install $(PROGRAMS) $(PREFIX)/bin
