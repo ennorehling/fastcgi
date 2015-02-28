@@ -15,5 +15,5 @@ echo "stopping $DAEMON process with pid $PID"
 kill $PID
 fi
 echo "stopping $DAEMON on port $PORT"
-spawn-fcgi -p $PORT -P $PIDFILE \
+spawn-fcgi -p $PORT -P $PIDFILE -d /tmp \
  -- $PREFIX/bin/$DAEMON

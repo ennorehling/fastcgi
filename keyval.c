@@ -7,8 +7,15 @@
 #include <assert.h>
 #include <critbit.h>
 
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 typedef struct payload {
     critbit_tree data;
+    FILE * binlog;
 } payload;
 
 void signal_handler(int sig);
@@ -74,22 +81,43 @@ void set_key(FCGX_Request *req, payload *pl, const char *key) {
         }
     }
     len = cb_new_kv(key, strlen(key), buffer, len, data);
+    fwrite(&len, sizeof(len), 1, pl->binlog);
+    fwrite(data, len, 1, pl->binlog);
+    fflush(pl->binlog);
     cb_insert(&pl->data, data, len);
     http_success(req->out, "");
 }
 
 int init(void * self)
 {
-    size_t len;
-    char data[2048];
     payload *pl = (payload *)self;
-
-    len = cb_new_kv("hodor", 5, "HODOR", 6, data);
-    cb_insert(&pl->data, data, len);
+    int fd = open("binlog", O_RDONLY);
+    if (fd>0) {
+        off_t fsize;
+        void *logdata;
+        fsize = lseek(fd, 0, SEEK_END);
+        logdata = mmap(NULL, fsize, PROT_READ, MAP_PRIVATE, fd, 0);
+        if (logdata) {
+            const char *data = (const char *)logdata;
+            printf("reading %u bytes from binlogs\n", (unsigned)fsize);
+            while(data-fsize<(const char *)logdata) {
+                size_t len = *(size_t *)data;
+                data+=sizeof(size_t);
+                cb_insert(&pl->data, data, len);
+                data+=len;
+            }
+            munmap(logdata, fsize);
+        }
+    }
+    pl->binlog = fopen("binlog", "a+");
+    signal(SIGINT, signal_handler);
+    signal(SIGHUP, signal_handler);
     return 0;
 }
 
 void done(void *self) {
+    payload *pl = (payload *)self;
+    fclose(pl->binlog);
     free(self);
 }
 
@@ -124,12 +152,12 @@ struct app myapp = {
 void signal_handler(int sig) {
     if (sig==SIGINT) {
         printf("received SIGINT\n");
-        // save_counters();
+        done(myapp.data);
         abort();
     }
     if (sig==SIGHUP) {
         printf("received SIGHUP\n");
-        // save_counters();
+        fflush(((payload *)myapp.data)->binlog);
     }
 }
 
