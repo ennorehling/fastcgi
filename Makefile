@@ -1,6 +1,7 @@
-PREFIX = /opt
+PREFIX = /opt/cgi
 CFLAGS = -g -Wall -Werror -Wextra -std=c11 -Icritbit
 PROGRAMS = counter-cgi complete-cgi keyval-cgi
+WEBSITE = /var/www/html
 
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
 .SECONDARY: complete.o
@@ -27,4 +28,5 @@ clean:
 
 install: $(PROGRAMS)
 	mkdir -p $(PREFIX)/bin
+	install html/*.* $(WEBSITE)
 	install $(PROGRAMS) $(PREFIX)/bin

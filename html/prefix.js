@@ -6,9 +6,8 @@ function removeAll(el) {
 
 function reload(word) {
 $.ajax({
-    url: '/cgi/' + word,
+    url: '/api/ac/' + word,
     success: function(result) {
-        console.log(typeof(result));
         words = result;
         var el = $("#wordlist").get(0);
         removeAll(el);
@@ -26,7 +25,6 @@ $.ajax({
 }
 
 var el = $("#input").get(0);
-console.log(el);
 el.addEventListener("input", function() {
     var prefix = $('#input').val();
     if (prefix.length>0) {

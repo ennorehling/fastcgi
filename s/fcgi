@@ -1,0 +1,19 @@
+#!/bin/sh
+
+NAME=$1
+PORT=9002
+PREFIX=/opt/cgi
+DAEMON="$NAME-cgi"
+PIDFILE="$PREFIX/run/$DAEMON.pid"
+
+[ -z $2 ] || PORT=$2
+
+if [ -e $PIDFILE ] ; then
+echo "pid file $PIDFILE"
+PID=`cat $PIDFILE`
+echo "stopping $DAEMON process with pid $PID"
+kill $PID
+fi
+echo "stopping $DAEMON on port $PORT"
+spawn-fcgi -p $PORT -P $PIDFILE \
+ -- $PREFIX/bin/$DAEMON

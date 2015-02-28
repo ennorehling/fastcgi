@@ -1,2 +1,2 @@
 #!/bin/sh
-spawn-fcgi -n -p 9002 ./$1-cgi
+spawn-fcgi -n -p 9001 ./$1-cgi
