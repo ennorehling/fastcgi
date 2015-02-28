@@ -10,4 +10,6 @@ env
 fi
 
 echo "building project"
+ls -la /home/travis/build/badgerman/fastcgi/opt/bin
+which runtests
 make check
