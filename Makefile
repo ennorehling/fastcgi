@@ -30,3 +30,6 @@ install: $(PROGRAMS)
 	mkdir -p $(PREFIX)/bin
 	install html/*.* $(WEBSITE)
 	install $(PROGRAMS) $(PREFIX)/bin
+
+check: $(PROGRAMS)
+	cd tests && runtests -l TESTS

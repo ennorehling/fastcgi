@@ -1,5 +1,2 @@
 #!/bin/sh
-curl -o - http://localhost/cgi/0
-curl -o - http://localhost/cgi/1.png
-curl -o - http://localhost/cgi/8
-curl -o - http://localhost/cgi/10
+echo "0 tests."

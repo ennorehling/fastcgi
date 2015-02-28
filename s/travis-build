@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+pwd
+
+if [ "" = "`which runtests`" ]; then
+echo "installing prerequisites"
+cd c-tap-harness && ./autogen && ./configure --prefix = /opt && make install
+cd ..
+fi
+
+echo "building project"
+make check

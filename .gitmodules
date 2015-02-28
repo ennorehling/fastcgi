@@ -1,3 +1,6 @@
 [submodule "critbit"]
 	path = critbit
 	url = https://github.com/badgerman/critbit.git
+[submodule "c-tap-harness"]
+	path = c-tap-harness
+	url = git://git.eyrie.org/devel/c-tap-harness.git
