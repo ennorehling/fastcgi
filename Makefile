@@ -1,5 +1,5 @@
 PREFIX = /opt/cgi
-CFLAGS = -g -Wall -Werror -Wextra -std=c11 -Icritbit
+CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99
 PROGRAMS = counter-cgi complete-cgi keyval-cgi
 WEBSITE = /var/www/html
 
