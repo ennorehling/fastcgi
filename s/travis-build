@@ -3,10 +3,10 @@ set -e
 pwd
 if [ "" = "`which runtests`" ]; then
 echo "installing prerequisites"
-set ROOT=`pwd`
-cd c-tap-harness && ./autogen && ./configure --prefix $ROOT/opt && make install
+cd c-tap-harness && ./autogen && ./configure --prefix ../opt && make install
 cd ..
-export PATH=$PATH:$ROOT/opt/bin
+export PATH=$PATH:$PWD/opt/bin
+env
 fi
 
 echo "building project"
