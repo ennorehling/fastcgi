@@ -1,13 +1,16 @@
+function update(result) {
+    $("#result").get(0).innerHTML = result;
+    $("#val").val(result);
+}
+
 function reload(word) {
 $.ajax({
     url: '/api/kv/' + word,
     success: function(result) {
-        var el = $("#result").get(0);
-        el.innerHTML = result;
+    	update(result);
     },
-    error: function() {
-        var el = $("#result").get(0);
-        el.innerHTML = "";
+    error: function(xhr) {
+        update("");
     }
 });
 }
@@ -22,4 +25,15 @@ el.addEventListener("input", function() {
     	var el = $("#result").get(0);
         el.innerHTML = "";
     }
+});
+
+var el = $("#submit").get(0);
+el.addEventListener("click", function() {
+    var word = $('#key').val();
+    $.ajax({
+    	type: "POST",
+        url: '/api/kv/' + word,
+        data: $('#val').val(),
+        complete: function() { reload(word); }
+    });
 });
