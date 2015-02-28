@@ -6,10 +6,7 @@ echo "installing prerequisites"
 cd c-tap-harness && ./autogen && ./configure --prefix $OLDPWD/opt && make install
 cd ..
 export PATH=$PATH:$PWD/opt/bin
-env
 fi
 
 echo "building project"
-ls -la /home/travis/build/badgerman/fastcgi/opt/bin
-which runtests
 make check
