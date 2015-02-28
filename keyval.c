@@ -46,7 +46,7 @@ void get_key(FCGX_Request *req, payload *pl, const char *key) {
     const void *matches[2];
     int result;
 
-    result = cb_find_prefix(&pl->data, key, strlen(key), matches, 2, 0);
+    result = cb_find_prefix(&pl->data, key, strlen(key)+1, matches, 2, 0);
     printf("found %d matches for %s\n", result, key);
     if (result==1) {
         char value[1024];
