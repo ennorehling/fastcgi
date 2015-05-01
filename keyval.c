@@ -69,7 +69,7 @@ void set_key(FCGX_Request *req, payload *pl, const char *key) {
     char data[2048], *buffer = data+1024;
     size_t size = 1024, len = 0;
 
-    for (char * b=buffer; size; ) {
+    for (char *b = buffer; size; ) {
         int bytes;
         bytes = FCGX_GetStr(b, size, req->in);
         if (bytes > 0) {
@@ -80,6 +80,7 @@ void set_key(FCGX_Request *req, payload *pl, const char *key) {
             break;
         }
     }
+    buffer[++len] = 0;
     len = cb_new_kv(key, strlen(key), buffer, len, data);
     fwrite(&len, sizeof(len), 1, pl->binlog);
     fwrite(data, len, 1, pl->binlog);
