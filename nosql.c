@@ -1,6 +1,7 @@
 #include "nosql.h"
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -63,7 +64,7 @@ void read_log(db_table *pl, const char *logfile) {
                 data += len;
                 entry.size = *(size_t *)data;
                 data += sizeof(size_t);
-                entry.data = (void *)data;
+                entry.data = memcpy(malloc(entry.size), (void *)data, entry.size);
                 data += entry.size;
                 insert_key(&pl->trie, key, len, &entry);
             }
