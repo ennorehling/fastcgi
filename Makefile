@@ -20,6 +20,9 @@ counter-cgi: counter.o
 cgiapp.a: cgiapp.o critbit/critbit.o
 	$(AR) -q $@ $^
 
+keyval-cgi: keyval.o nosql.o cgiapp.a
+	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
+
 %-cgi: %.o cgiapp.a
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
