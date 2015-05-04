@@ -1,12 +1,20 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "nosql.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
 #include <fcntl.h>
+#ifdef WIN32
+#include <windows.h>
+#include <io.h>
+#else
+#include <sys/mman.h>
 #include <unistd.h>
+#define _open(filename, oflag) open(filename, oflag)
+#define _lseek(fd, offset, origin) lseek(fd, offset, origin)
+#endif
 
 int get_key(db_table *pl, const char *key, db_entry *entry) {
     const void *matches[2];
@@ -44,12 +52,16 @@ void set_key(db_table *pl, const char *key, db_entry *entry) {
 }
 
 void read_log(db_table *pl, const char *logfile) {
-    int fd = open(logfile, O_RDONLY);
+    int fd = _open(logfile, O_RDONLY);
     if (fd>0) {
-        off_t fsize;
         void *logdata;
-        fsize = lseek(fd, 0, SEEK_END);
+        off_t fsize = _lseek(fd, 0, SEEK_END);
+#ifdef WIN32
+        HANDLE fm = CreateFileMapping((HANDLE)_get_osfhandle(fd), NULL, PAGE_READONLY, 0, 0, NULL);
+        logdata = (void *)MapViewOfFile(fm, FILE_MAP_READ, 0, 0, fsize);
+#else
         logdata = mmap(NULL, fsize, PROT_READ, MAP_PRIVATE, fd, 0);
+#endif
         if (logdata) {
             const char *data = (const char *)logdata;
             printf("reading %u bytes from binlogs\n", (unsigned)fsize);
@@ -68,7 +80,11 @@ void read_log(db_table *pl, const char *logfile) {
                 data += entry.size;
                 insert_key(&pl->trie, key, len, &entry);
             }
+#ifdef WIN32
+            UnmapViewOfFile(logdata);
+#else
             munmap(logdata, fsize);
+#endif
         }
     }
 }
