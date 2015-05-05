@@ -1,0 +1,59 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <CuTest.h>
+#include <critbit.h>
+#include "nosql.h"
+
+#include <string.h>
+
+static void test_nosql_set_get(CuTest *tc) {
+    db_table tbl = { 0 };
+    db_entry cur = { 6, "HODOR" };
+    set_key(&tbl, "hodor", &cur);
+    CuAssertIntEquals(tc, 404, get_key(&tbl, "invalid", &cur));
+    memset(&cur, 0, sizeof(cur));
+    CuAssertIntEquals(tc, 200, get_key(&tbl, "hodor", &cur));
+    CuAssertStrEquals(tc, (const char *)cur.data, "HODOR");
+}
+
+static void test_nosql_update(CuTest *tc) {
+    db_table tbl = { 0 };
+    db_entry cu1 = { 6, "HODOR" };
+    db_entry cu2 = { 6, "NODOR" };
+    set_key(&tbl, "hodor", &cu1);
+    set_key(&tbl, "hodor", &cu2);
+    memset(&cu2, 0, sizeof(cu2));
+    CuAssertIntEquals(tc, 200, get_key(&tbl, "hodor", &cu2));
+    CuAssertStrEquals(tc, (const char *)cu2.data, "NODOR");
+}
+
+static void test_nosql_idempotent(CuTest *tc) {
+    db_table tbl = { 0 };
+    const char * strings = "HODOR\0HODOR";
+    db_entry cu1 = { 6, (void *)strings };
+    db_entry cu2 = { 6, (void *)(strings+6) };
+    set_key(&tbl, "hodor", &cu1);
+    set_key(&tbl, "hodor", &cu2);
+    memset(&cu1, 0, sizeof(cu1));
+    CuAssertIntEquals(tc, 200, get_key(&tbl, "hodor", &cu1));
+    CuAssertStrEquals(tc, (const char *)cu1.data, "HODOR");
+    CuAssertPtrEquals(tc, cu2.data, cu1.data);
+}
+
+void add_suite_critbit(CuSuite *suite);
+
+int main(int argc, char **argv) {
+    CuString *output = CuStringNew();
+    CuSuite *suite = CuSuiteNew();
+
+    add_suite_critbit(suite);
+    SUITE_ADD_TEST(suite, test_nosql_set_get);
+    SUITE_ADD_TEST(suite, test_nosql_idempotent);
+    SUITE_ADD_TEST(suite, test_nosql_update);
+
+    CuSuiteRun(suite);
+    CuSuiteSummary(suite, output);
+    CuSuiteDetails(suite, output);
+    printf("%s\n", output->buffer);
+    return suite->failCount;
+    return 0;
+}

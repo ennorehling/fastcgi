@@ -41,13 +41,28 @@ static void insert_key(critbit_tree *trie, const char *key, size_t keylen, db_en
 
 void set_key(db_table *pl, const char *key, db_entry *entry) {
     size_t len = strlen(key);
+    const void *matches[2];
+    int result;
 
-    fwrite(&len, sizeof(len), 1, pl->binlog);
-    fwrite(key, len, 1, pl->binlog);
-    fwrite(&entry->size, sizeof(entry->size), 1, pl->binlog);
-    fwrite(entry->data, entry->size, 1, pl->binlog);
-    fflush(pl->binlog);
-    
+    if (pl->binlog) {
+        fwrite(&len, sizeof(len), 1, pl->binlog);
+        fwrite(key, len, 1, pl->binlog);
+        fwrite(&entry->size, sizeof(entry->size), 1, pl->binlog);
+        fwrite(entry->data, entry->size, 1, pl->binlog);
+        fflush(pl->binlog);
+    }
+    result = cb_find_prefix(&pl->trie, key, strlen(key) + 1, matches, 2, 0);
+    if (result > 0) {
+        db_entry *match = (db_entry *)*matches;
+        if (match->size == entry->size && memcmp(match->data, entry->data, entry->size) == 0) {
+            return;
+        }
+        else {
+            /* replace, TODO: memory leak */
+            match->data = entry->data;
+            match->size = entry->size;
+        }
+    }
     insert_key(&pl->trie, key, len, entry);
 }
 
