@@ -6,7 +6,7 @@
 #include <string.h>
 
 static void test_nosql_set_get(CuTest *tc) {
-    db_table tbl = { 0 };
+    db_table tbl = { { 0 }, 0 };
     db_entry cur = { 6, "HODOR" };
     set_key(&tbl, "hodor", &cur);
     CuAssertIntEquals(tc, 404, get_key(&tbl, "invalid", &cur));
@@ -16,7 +16,7 @@ static void test_nosql_set_get(CuTest *tc) {
 }
 
 static void test_nosql_update(CuTest *tc) {
-    db_table tbl = { 0 };
+    db_table tbl = { { 0 }, 0 };
     db_entry cu1 = { 6, "HODOR" };
     db_entry cu2 = { 6, "NODOR" };
     set_key(&tbl, "hodor", &cu1);
@@ -27,7 +27,7 @@ static void test_nosql_update(CuTest *tc) {
 }
 
 static void test_nosql_idempotent(CuTest *tc) {
-    db_table tbl = { 0 };
+    db_table tbl = { { 0 }, 0 };
     const char * strings = "HODOR\0HODOR";
     db_entry cu1 = { 6, (void *)strings };
     db_entry cu2 = { 6, (void *)(strings+6) };
@@ -41,7 +41,7 @@ static void test_nosql_idempotent(CuTest *tc) {
 
 void add_suite_critbit(CuSuite *suite);
 
-int main(int argc, char **argv) {
+int main(void) {
     CuString *output = CuStringNew();
     CuSuite *suite = CuSuiteNew();
 

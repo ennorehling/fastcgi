@@ -1,13 +1,16 @@
 PREFIX = /opt/cgi
 CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99
 PROGRAMS = counter-cgi complete-cgi keyval-cgi
-TESTS = tests
+TESTS = fastcgi-test
 WEBSITE = /var/www/html
 
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
 .SECONDARY: complete.o
 
 all: $(PROGRAMS) $(TESTS)
+
+test: $(TESTS)
+	./fastcgi-test
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES)
@@ -27,7 +30,7 @@ keyval-cgi: keyval.o nosql.o cgiapp.a
 %-cgi: %.o cgiapp.a
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
-tests: tests.o nosql.o critbit/test_critbit.o critbit/CuTest.o critbit/critbit.o
+fastcgi-test: tests.o nosql.o critbit/test_critbit.o critbit/CuTest.o critbit/critbit.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:
