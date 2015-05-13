@@ -16,6 +16,12 @@
 #define _lseek(fd, offset, origin) lseek(fd, offset, origin)
 #endif
 
+static const char * id4 = "ENNO"; /* file magic: 0x4f4e4e45 */
+
+#define ID4_VERSION 0x01
+#define RELEASE_VERSION ID4_VERSION
+#define MIN_VERSION ID4_VERSION
+
 int get_key(db_table *pl, const char *key, db_entry *entry) {
     const void *matches[2];
     int result;
@@ -71,8 +77,19 @@ void set_key(db_table *pl, const char *key, db_entry *entry) {
     set_key_i(pl, key, len, entry);
 }
 
-void open_log(db_table *pl, const char *logfile) {
+int open_log(db_table *pl, const char *logfile) {
     pl->binlog = fopen(logfile, "a+");
+    if (pl->binlog) {
+        fseek(pl->binlog, 0, SEEK_END);
+        if (ftell(pl->binlog) == 0) {
+            short version = RELEASE_VERSION;
+            fwrite(id4, sizeof(char), 4, pl->binlog);
+            fwrite(&version, sizeof(version), 1, pl->binlog);
+            return 0;
+        }
+        return 0;
+    }
+    return errno;
 }
 
 void read_log(db_table *pl, const char *logfile) {
@@ -87,22 +104,33 @@ void read_log(db_table *pl, const char *logfile) {
         logdata = mmap(NULL, fsize, PROT_READ, MAP_PRIVATE, fd, 0);
 #endif
         if (logdata) {
+            short version = 0;
             const char *data = (const char *)logdata;
-            printf("reading %u bytes from binlogs\n", (unsigned)fsize);
-            while(data-fsize<(const char *)logdata) {
-                db_entry entry;
-                const char *key;
-                size_t len;
-                
-                len = *(size_t *)data;
-                data += sizeof(size_t);
-                key = (const char *)data;
-                data += len;
-                entry.size = *(size_t *)data;
-                data += sizeof(size_t);
-                entry.data = memcpy(malloc(entry.size), (void *)data, entry.size);
-                data += entry.size;
-                set_key_i(pl, key, len-1, &entry);
+            if (memcmp(data, id4, 4) == 0) {
+                size_t header = 4 + sizeof(short);
+                memcpy(&version, data+4, sizeof(short));
+                data += header;
+            }
+            if (version < MIN_VERSION) {
+                printf("%s has deprecated version %d, not reading it.\n", logfile, version);
+            }
+            else {
+                printf("reading %u bytes from binlogs\n", (unsigned)fsize);
+                while (data - fsize < (const char *)logdata) {
+                    db_entry entry;
+                    const char *key;
+                    size_t len;
+
+                    len = *(size_t *)data;
+                    data += sizeof(size_t);
+                    key = (const char *)data;
+                    data += len;
+                    entry.size = *(size_t *)data;
+                    data += sizeof(size_t);
+                    entry.data = memcpy(malloc(entry.size), (void *)data, entry.size);
+                    data += entry.size;
+                    set_key_i(pl, key, len - 1, &entry);
+                }
             }
 #ifdef WIN32
             UnmapViewOfFile(logdata);
