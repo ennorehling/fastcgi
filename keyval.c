@@ -48,7 +48,7 @@ int init(void * self)
         printf("could not read binlog, aborting.\n");
         abort();
     }
-    if (open_log(&tbl, "binlog") != 0) {
+    if (open_log(pl, "binlog") != 0) {
         printf("could not open binlog, aborting.\n");
         abort();
     }

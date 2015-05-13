@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #ifndef WIN32
+#include <unistd.h>
 #define _unlink(s) unlink(s)
 #endif
 
