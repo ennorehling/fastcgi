@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 #ifdef WIN32
 #include <windows.h>
 #include <io.h>
@@ -92,7 +93,7 @@ int open_log(db_table *pl, const char *logfile) {
     return errno;
 }
 
-void read_log(db_table *pl, const char *logfile) {
+int read_log(db_table *pl, const char *logfile) {
     int fd = _open(logfile, O_RDONLY);
     if (fd>0) {
         void *logdata;
@@ -113,6 +114,7 @@ void read_log(db_table *pl, const char *logfile) {
             }
             if (version < MIN_VERSION) {
                 printf("%s has deprecated version %d, not reading it.\n", logfile, version);
+                return -1;
             }
             else {
                 printf("reading %u bytes from binlogs\n", (unsigned)fsize);
@@ -137,6 +139,8 @@ void read_log(db_table *pl, const char *logfile) {
 #else
             munmap(logdata, fsize);
 #endif
+            return fsize;
         }
     }
+    return 0;
 }

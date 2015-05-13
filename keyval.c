@@ -44,8 +44,14 @@ int http_not_found(FCGX_Stream *out, const char *body) {
 int init(void * self)
 {
     db_table *pl = (db_table *)self;
-    read_log(pl, "binlog");
-    open_log(&tbl, "binlog");
+    if (read_log(pl, "binlog") < 0) {
+        printf("could not read binlog, aborting.\n");
+        abort();
+    }
+    if (open_log(&tbl, "binlog") != 0) {
+        printf("could not open binlog, aborting.\n");
+        abort();
+    }
     signal(SIGINT, signal_handler);
     signal(SIGHUP, signal_handler);
     return 0;
