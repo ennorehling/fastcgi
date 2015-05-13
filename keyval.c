@@ -45,7 +45,7 @@ int init(void * self)
 {
     db_table *pl = (db_table *)self;
     read_log(pl, "binlog");
-    pl->binlog = fopen("binlog", "a+");
+    open_log(&tbl, "binlog");
     signal(SIGINT, signal_handler);
     signal(SIGHUP, signal_handler);
     return 0;

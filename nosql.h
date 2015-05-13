@@ -15,6 +15,7 @@ typedef struct db_entry {
 int get_key(db_table *pl, const char *key, db_entry *entry);
 void set_key(db_table *pl, const char *key, db_entry *entry);
 void read_log(db_table *pl, const char *logfile);
+void open_log(db_table *pl, const char *logfile);
 
 #define MAXENTRY 2048
 #define MAXKEY 1024

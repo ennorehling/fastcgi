@@ -4,6 +4,7 @@
 #include "nosql.h"
 
 #include <string.h>
+#include <stdio.h>
 
 static void test_nosql_set_get(CuTest *tc) {
     db_table tbl = { { 0 }, 0 };
@@ -39,6 +40,42 @@ static void test_nosql_idempotent(CuTest *tc) {
     CuAssertPtrEquals(tc, cu2.data, cu1.data);
 }
 
+static void test_replay_log_multi(CuTest *tc) {
+    db_table tbl = { { 0 }, 0 };
+    db_entry cur = { 6, "HODOR" };
+
+    remove("binlog.test");
+    open_log(&tbl, "binlog.test");
+    set_key(&tbl, "hodor", &cur);
+    cur.data = "NOPE!";
+    set_key(&tbl, "hodor", &cur);
+    fclose(tbl.binlog);
+    tbl.binlog = 0;
+    cb_clear(&tbl.trie);
+    read_log(&tbl, "binlog.test");
+    remove("binlog.test");
+    memset(&cur, 0, sizeof(cur));
+    CuAssertIntEquals(tc, 200, get_key(&tbl, "hodor", &cur));
+    CuAssertStrEquals(tc, "NOPE!", cur.data);
+}
+
+static void test_replay_log(CuTest *tc) {
+    db_table tbl = { { 0 }, 0 };
+    db_entry cur = { 6, "HODOR" };
+
+    remove("binlog.test");
+    open_log(&tbl, "binlog.test");
+    set_key(&tbl, "hodor", &cur);
+    fclose(tbl.binlog);
+    tbl.binlog = 0;
+    cb_clear(&tbl.trie);
+    read_log(&tbl, "binlog.test");
+    remove("binlog.test");
+    memset(&cur, 0, sizeof(cur));
+    CuAssertIntEquals(tc, 200, get_key(&tbl, "hodor", &cur));
+    CuAssertStrEquals(tc, "HODOR", (const char *)cur.data);
+}
+
 void add_suite_critbit(CuSuite *suite);
 
 int main(void) {
@@ -49,6 +86,8 @@ int main(void) {
     SUITE_ADD_TEST(suite, test_nosql_set_get);
     SUITE_ADD_TEST(suite, test_nosql_idempotent);
     SUITE_ADD_TEST(suite, test_nosql_update);
+    SUITE_ADD_TEST(suite, test_replay_log);
+    SUITE_ADD_TEST(suite, test_replay_log_multi);
 
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);

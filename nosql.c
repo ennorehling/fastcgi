@@ -39,19 +39,19 @@ static void insert_key(critbit_tree *trie, const char *key, size_t keylen, db_en
     cb_insert(trie, data, len);    
 }
 
-void set_key(db_table *pl, const char *key, db_entry *entry) {
-    size_t len = strlen(key);
+static void set_key_i(db_table *pl, const char *key, size_t len, db_entry *entry) {
     const void *matches[2];
     int result;
 
     if (pl->binlog) {
-        fwrite(&len, sizeof(len), 1, pl->binlog);
-        fwrite(key, len, 1, pl->binlog);
+        size_t size = len + 1;
+        fwrite(&size, sizeof(size), 1, pl->binlog);
+        fwrite(key, sizeof(char), size, pl->binlog);
         fwrite(&entry->size, sizeof(entry->size), 1, pl->binlog);
-        fwrite(entry->data, entry->size, 1, pl->binlog);
+        fwrite(entry->data, sizeof(char), entry->size, pl->binlog);
         fflush(pl->binlog);
     }
-    result = cb_find_prefix(&pl->trie, key, strlen(key) + 1, matches, 2, 0);
+    result = cb_find_prefix(&pl->trie, key, len + 1, matches, 2, 0);
     if (result > 0) {
         db_entry *match = (db_entry *)*matches;
         if (match->size == entry->size && memcmp(match->data, entry->data, entry->size) == 0) {
@@ -64,6 +64,15 @@ void set_key(db_table *pl, const char *key, db_entry *entry) {
         }
     }
     insert_key(&pl->trie, key, len, entry);
+}
+
+void set_key(db_table *pl, const char *key, db_entry *entry) {
+    size_t len = strlen(key);
+    set_key_i(pl, key, len, entry);
+}
+
+void open_log(db_table *pl, const char *logfile) {
+    pl->binlog = fopen(logfile, "a+");
 }
 
 void read_log(db_table *pl, const char *logfile) {
@@ -93,7 +102,7 @@ void read_log(db_table *pl, const char *logfile) {
                 data += sizeof(size_t);
                 entry.data = memcpy(malloc(entry.size), (void *)data, entry.size);
                 data += entry.size;
-                insert_key(&pl->trie, key, len, &entry);
+                set_key_i(pl, key, len-1, &entry);
             }
 #ifdef WIN32
             UnmapViewOfFile(logdata);
