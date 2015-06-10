@@ -1,6 +1,5 @@
 PREFIX = /opt
-#CFLAGS = -g -Wconversion -Wall -Werror -Wextra -Icritbit -std=c99
-CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99
+CFLAGS = -g -Wconversion -Wall -Werror -Wextra -Icritbit -std=c99
 PROGRAMS = counter-cgi prefix-cgi ennodb-cgi
 TESTS = fastcgi-test
 WEBSITE = /var/www/html
