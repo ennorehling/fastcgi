@@ -32,7 +32,7 @@ el.addEventListener("click", function() {
     var word = $('#key').val();
     $.ajax({
     	type: "POST",
-        url: '/api/kv/' + word,
+        url: '/api/ennodb.cgi/' + word,
         data: $('#val').val(),
         complete: function() { reload(word); }
     });
