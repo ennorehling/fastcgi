@@ -64,9 +64,9 @@ int process(void *self, FCGX_Request *req)
     payload *pl = (payload *)self;
     assert(self && req);
 
-    script = FCGX_GetParam("SCRIPT_NAME", req->envp);
+    script = FCGX_GetParam("PATH_INFO", req->envp);
     prefix = get_prefix(script);
-    nresults = cb_find_prefix(&pl->words, prefix, strlen(prefix), results, MAXRESULTS, 0);
+    nresults = prefix ? cb_find_prefix(&pl->words, prefix, strlen(prefix), results, MAXRESULTS, 0) : 0;
 
     /* really dumb conent negotiation: */
     accept = FCGX_GetParam("HTTP_ACCEPT", req->envp);

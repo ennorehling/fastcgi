@@ -1,11 +1,11 @@
 PREFIX = /opt/cgi
 CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99
-PROGRAMS = counter-cgi complete-cgi keyval-cgi
+PROGRAMS = counter-cgi prefix-cgi keyval-cgi
 TESTS = fastcgi-test
 WEBSITE = /var/www/html
 
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
-.SECONDARY: complete.o
+.SECONDARY: prefix.o
 
 all: $(PROGRAMS) $(TESTS)
 

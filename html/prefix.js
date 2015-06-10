@@ -6,7 +6,7 @@ function removeAll(el) {
 
 function reload(word) {
 $.ajax({
-    url: '/api/ac/' + word,
+    url: '/api/prefix.cgi/' + word,
     success: function(result) {
         words = result;
         var el = $("#wordlist").get(0);
