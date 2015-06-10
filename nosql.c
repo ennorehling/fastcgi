@@ -1,4 +1,6 @@
-#define _CRT_SECURE_NO_WARNINGS
+#ifdef _MSC_VER
+# define _CRT_SECURE_NO_WARNINGS
+#endif
 #include "nosql.h"
 #include <assert.h>
 #include <string.h>
@@ -102,7 +104,7 @@ int read_log(db_table *pl, const char *logfile) {
         HANDLE fm = CreateFileMapping((HANDLE)_get_osfhandle(fd), NULL, PAGE_READONLY, 0, 0, NULL);
         logdata = (void *)MapViewOfFile(fm, FILE_MAP_READ, 0, 0, fsize);
 #else
-        logdata = mmap(NULL, fsize, PROT_READ, MAP_PRIVATE, fd, 0);
+        logdata = mmap(NULL, (size_t)fsize, PROT_READ, MAP_PRIVATE, fd, 0);
 #endif
         if (logdata) {
             short version = 0;
@@ -123,11 +125,11 @@ int read_log(db_table *pl, const char *logfile) {
                     const char *key;
                     size_t len;
 
-                    len = *(size_t *)data;
+                    len = *(const size_t *)(const void *)data;
                     data += sizeof(size_t);
                     key = (const char *)data;
                     data += len;
-                    entry.size = *(size_t *)data;
+                    entry.size = *(const size_t *)(const void *)data;
                     data += sizeof(size_t);
                     entry.data = memcpy(malloc(entry.size), (void *)data, entry.size);
                     data += entry.size;
@@ -137,7 +139,7 @@ int read_log(db_table *pl, const char *logfile) {
 #ifdef WIN32
             UnmapViewOfFile(logdata);
 #else
-            munmap(logdata, fsize);
+            munmap(logdata, (size_t)fsize);
 #endif
             return fsize;
         }

@@ -8,4 +8,4 @@ typedef struct app {
     int (*process)(void *self, FCGX_Request* req);
 } app;
 
-struct app * create_app(void);
+struct app * create_app(int argc, char **argv);

@@ -9,26 +9,26 @@
 #include <assert.h>
 #include <critbit.h>
 
-void signal_handler(int sig);
+static const char * binlog = "binlog";
 
-const char * get_prefix(const char *path) {
+static const char * get_prefix(const char *path) {
     const char * result = strrchr(path, '/');
     return result ? result+1 : 0;
 }
 
-int http_success(FCGX_Stream *out, db_entry *body) {
+static int http_success(FCGX_Stream *out, db_entry *body) {
     FCGX_FPrintF(out,
                  "Status: 200 OK\r\n"
                  "Content-Type: text/plain\r\n"
                  "Content-Length: %u\r\n"
                  "\r\n", body ? (unsigned int)body->size : 0);
     if (body) {
-        FCGX_PutStr(body->data, body->size, out);
+        FCGX_PutStr(body->data, (int)body->size, out);
     }
     return 200;
 }
 
-int http_not_found(FCGX_Stream *out, const char *body) {
+static int http_not_found(FCGX_Stream *out, const char *body) {
     int http_result = 404;
     size_t len = body ? strlen(body) : 0;
 
@@ -41,15 +41,23 @@ int http_not_found(FCGX_Stream *out, const char *body) {
     return http_result;
 }
 
-int init(void * self)
+static void done(void *self) {
+    db_table *pl = (db_table *)self;
+    fclose(pl->binlog);
+    free(self);
+}
+
+static void signal_handler(int sig);
+
+static int init(void * self)
 {
     db_table *pl = (db_table *)self;
-    if (read_log(pl, "binlog") < 0) {
-        printf("could not read binlog, aborting.\n");
+    if (read_log(pl, binlog) < 0) {
+        printf("could not read %s, aborting.\n", binlog);
         abort();
     }
-    if (open_log(pl, "binlog") != 0) {
-        printf("could not open binlog, aborting.\n");
+    if (open_log(pl, binlog) != 0) {
+        printf("could not open %s, aborting.\n", binlog);
         abort();
     }
     signal(SIGINT, signal_handler);
@@ -57,13 +65,7 @@ int init(void * self)
     return 0;
 }
 
-void done(void *self) {
-    db_table *pl = (db_table *)self;
-    fclose(pl->binlog);
-    free(self);
-}
-
-int process(void *self, FCGX_Request *req)
+static int process(void *self, FCGX_Request *req)
 {
     const char *script, *prefix, *method;
     db_table *pl = (db_table *)self;
@@ -90,9 +92,9 @@ int process(void *self, FCGX_Request *req)
         size_t size = sizeof(buffer), len = 0;
     
         for (char *b = buffer; size; ) {
-            int bytes;
-            bytes = FCGX_GetStr(b, size, req->in);
-            if (bytes > 0) {
+            int result = FCGX_GetStr(b, (int)size, req->in);
+            if (result > 0) {
+                size_t bytes = (size_t)result;
                 b+=bytes;
                 size-=bytes;
                 len+=bytes;
@@ -113,11 +115,11 @@ int process(void *self, FCGX_Request *req)
     return 0;
 }
 
-struct app myapp = {
+static struct app myapp = {
     0, init, done, process
 };
 
-void signal_handler(int sig) {
+static void signal_handler(int sig) {
     if (sig==SIGINT) {
         printf("received SIGINT\n");
         done(myapp.data);
@@ -129,7 +131,10 @@ void signal_handler(int sig) {
     }
 }
 
-struct app * create_app(void) {
+struct app * create_app(int argc, char **argv) {
+    if (argc>1) {
+        binlog = argv[1];
+    }
     myapp.data = calloc(1, sizeof(db_table));
     return &myapp;
 }

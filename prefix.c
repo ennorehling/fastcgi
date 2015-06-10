@@ -19,12 +19,22 @@ typedef struct payload {
     critbit_tree words;
 } payload;
 
-void signal_handler(int sig);
+static void signal_handler(int sig) {
+    if (sig==SIGINT) {
+        printf("received SIGINT\n");
+        // save_counters();
+        abort();
+    }
+    if (sig==SIGHUP) {
+        printf("received SIGHUP\n");
+        // save_counters();
+    }
+}
 
+static const char *wordlist = "/usr/share/dict/words";
 
-int init(void * self)
+static int init(void * self)
 {
-    const char *wordlist = "/usr/share/dict/words";
     payload *pl = (payload *)self;
     FILE *F;
     assert(self);
@@ -50,12 +60,12 @@ int init(void * self)
     return 0;
 }
 
-const char * get_prefix(const char *path) {
+static const char * get_prefix(const char *path) {
     const char * result = strrchr(path, '/');
     return result ? result+1 : 0;
 }
 
-int process(void *self, FCGX_Request *req)
+static int process(void *self, FCGX_Request *req)
 {
     const char * types[] = { "text/plain", "application/json" };
     const void * results[MAXRESULTS];
@@ -107,23 +117,14 @@ int process(void *self, FCGX_Request *req)
     return 0;
 }
 
-struct app myapp = {
+static struct app myapp = {
     0, init, 0, process
 };
 
-void signal_handler(int sig) {
-    if (sig==SIGINT) {
-        printf("received SIGINT\n");
-        // save_counters();
-        abort();
+struct app * create_app(int argc, char **argv) {
+    if (argc>1) {
+        wordlist = argv[1];
     }
-    if (sig==SIGHUP) {
-        printf("received SIGHUP\n");
-        // save_counters();
-    }
-}
-
-struct app * create_app(void) {
     myapp.data = calloc(1, sizeof(payload));
     return &myapp;
 }

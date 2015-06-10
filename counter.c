@@ -15,7 +15,7 @@ static struct {
     size_t length;
 } png[MAX_PNG];
 
-int get_png_image(int n, const char **data, size_t *len) {
+static int get_png_image(int n, const char **data, size_t *len) {
     assert(n>=0);
 
     if (n>=MAX_PNG) return -1;
@@ -29,7 +29,7 @@ int get_png_image(int n, const char **data, size_t *len) {
             return -2;
         }
         fseek(F, 0, SEEK_END);
-        png[n].length = ftell(F);
+        png[n].length = (size_t)ftell(F);
         png[n].bytes = malloc(png[n].length);
         fseek(F, 0, SEEK_SET);
         fread(png[n].bytes, png[n].length, 1, F);
@@ -41,7 +41,7 @@ int get_png_image(int n, const char **data, size_t *len) {
     return 0;
 }
 
-int png_process(FCGX_Request *request, int value) {
+static int png_process(FCGX_Request *request, int value) {
     const char * data = 0;
     size_t len = 0;
     if (get_png_image(value, &data, &len)!=0) {
@@ -56,12 +56,12 @@ int png_process(FCGX_Request *request, int value) {
                  "Content-Type: image/png\r\n"
                  "Content-Length: %u\r\n"
                  "\r\n", (unsigned int)len);
-    int bytes = FCGX_PutStr(data, len, request->out);
+    int bytes = FCGX_PutStr(data, (int)len, request->out);
     assert(bytes==(int)len);
     return 200;
 }
 
-int counter_process(FCGX_Request *request, int n, const char * type) {
+static int counter_process(FCGX_Request *request, int n, const char * type) {
     int value = ++counters[n];
     assert(n>=0 && n<num_counters);
     assert(type);
@@ -78,25 +78,25 @@ int counter_process(FCGX_Request *request, int n, const char * type) {
     return 200;
 }
 
-void save_counters(void) {
+static void save_counters(void) {
     FILE * F = fopen("counters.dat", "wb");
     fwrite(&num_counters, sizeof(int), 1, F);
-    fwrite(counters, sizeof(int), num_counters, F);
+    fwrite(counters, sizeof(int), (size_t)num_counters, F);
     fclose(F);
 }
 
-void load_counters(void) {
+static void load_counters(void) {
     int n;
     FILE * F = fopen("counters.dat", "rb");
     if (F) {
         fread(&n, sizeof(int), 1, F);
         if (n>num_counters) n = num_counters;
-        fread(counters, sizeof(int), n, F);
+        fread(counters, sizeof(int), (size_t)n, F);
         fclose(F);
     }
 }
 
-void signal_handler(int sig) {
+static void signal_handler(int sig) {
     if (sig==SIGINT) {
         printf("received SIGINT\n");
         save_counters();
@@ -108,12 +108,12 @@ void signal_handler(int sig) {
     }
 }
 
-const char * filename(const char *path) {
+static const char * filename(const char *path) {
     const char * result = strrchr(path, '/');
     return result ? result+1 : 0;
 }
 
-const char * extension(const char *path) {
+static const char * extension(const char *path) {
     const char * result = strrchr(path, '/');
     if (!result) result = path;
     result = strchr(result ? result : path, '.');

@@ -1,4 +1,6 @@
-#define _CRT_SECURE_NO_WARNINGS
+#ifdef _MSC_VER
+# define _CRT_SECURE_NO_WARNINGS
+#endif
 #include <CuTest.h>
 #include <critbit.h>
 #include "nosql.h"
@@ -100,5 +102,4 @@ int main(void) {
     CuSuiteDetails(suite, output);
     printf("%s\n", output->buffer);
     return suite->failCount;
-    return 0;
 }

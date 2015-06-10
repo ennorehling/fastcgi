@@ -5,7 +5,7 @@ function update(result) {
 
 function reload(word) {
 $.ajax({
-    url: '/api/kv/' + word,
+    url: '/api/ennodb.cgi/' + word,
     success: function(result) {
     	update(result);
     },

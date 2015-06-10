@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          fcgi-prefix
+# Provides:          ennodb
 # Required-Start:    $remote_fs
 # Required-Stop:     $remote_fs
 # Should-Start:
@@ -13,10 +13,10 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-NAME="prefix"
+NAME="ennodb"
 SPAWN_FCGI="/usr/bin/spawn-fcgi"
 DAEMON="/opt/cgi/bin/$NAME-cgi"
-DESC="FastCGI autocomplete"
+DESC="EnnoDB"
 
 PIDFILE="/var/run/$NAME.pid"
 
@@ -36,7 +36,7 @@ FCGI_SOCKET_GROUP="www-data"
 
 # Default options, these can be overriden by the information
 # at /etc/default/$NAME
-DAEMON_OPTS="/usr/share/dict/words"
+DAEMON_OPTS="/var/lib/ennodb/default.enno"
 
 ENV_VARS="PATH='$PATH'" # We reset the environ for spawn-fcgi, but we use the
                         # contents of this variable as a prefix when calling it
