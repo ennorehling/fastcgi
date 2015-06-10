@@ -13,9 +13,10 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
+PREFIX="/opt"
 NAME="ennodb"
 SPAWN_FCGI="/usr/bin/spawn-fcgi"
-DAEMON="/opt/cgi/bin/$NAME-cgi"
+DAEMON="$PREFIX/bin/$NAME-cgi"
 DESC="EnnoDB"
 
 PIDFILE="/var/run/$NAME.pid"

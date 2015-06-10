@@ -72,10 +72,14 @@ static int process(void *self, FCGX_Request *req)
     assert(self && req);
 
     method = FCGX_GetParam("REQUEST_METHOD", req->envp);
-    script = FCGX_GetParam("SCRIPT_NAME", req->envp);
+    script = FCGX_GetParam("PATH_INFO", req->envp);
     prefix = get_prefix(script);
 
     printf("%s request for %s\n", method, prefix);
+
+    if (!method || !prefix) {
+        return -1;
+    }
     if (strcmp(method, "GET")==0) {
         db_entry entry;
         if (get_key(pl, prefix, &entry)==200) {
