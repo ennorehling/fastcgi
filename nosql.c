@@ -107,7 +107,7 @@ int read_log(db_table *pl, const char *logfile) {
         if (logdata) {
             short version = 0;
             const char *data = (const char *)logdata;
-            if (memcmp(data, id4, 4) == 0) {
+            if (fsize>=4 && memcmp(data, id4, 4) == 0) {
                 size_t header = 4 + sizeof(short);
                 memcpy(&version, data+4, sizeof(short));
                 data += header;
