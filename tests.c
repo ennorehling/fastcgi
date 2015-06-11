@@ -62,7 +62,7 @@ static void test_replay_log_multi(CuTest *tc) {
     _unlink("binlog.test");
     open_log(&tbl, "binlog.test");
     set_key(&tbl, "hodor", &cur);
-    cur.data = "NOPE!";
+    cur = mk_entry("NOPE!");
     set_key(&tbl, "hodor", &cur);
     fclose(tbl.binlog);
     tbl.binlog = 0;

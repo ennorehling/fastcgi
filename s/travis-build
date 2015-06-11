@@ -12,4 +12,4 @@ fi
 
 # c_tap
 echo "building project"
-make && make test
+make -k && make test
