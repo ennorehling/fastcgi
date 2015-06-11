@@ -14,9 +14,16 @@
 #endif
 
 
+static db_entry mk_entry(const char *str) {
+    db_entry ret;
+    ret.size = strlen(str)+1;
+    ret.data = (void*)str;
+    return ret;
+}
+
 static void test_nosql_set_get(CuTest *tc) {
     db_table tbl = { { 0 }, 0 };
-    db_entry cur = { 6, "HODOR" };
+    db_entry cur = mk_entry("HODOR");
     set_key(&tbl, "hodor", &cur);
     CuAssertIntEquals(tc, 404, get_key(&tbl, "invalid", &cur));
     memset(&cur, 0, sizeof(cur));
@@ -26,8 +33,8 @@ static void test_nosql_set_get(CuTest *tc) {
 
 static void test_nosql_update(CuTest *tc) {
     db_table tbl = { { 0 }, 0 };
-    db_entry cu1 = { 6, "HODOR" };
-    db_entry cu2 = { 6, "NODOR" };
+    db_entry cu1 = mk_entry("HODOR");
+    db_entry cu2 = mk_entry("NODOR");
     set_key(&tbl, "hodor", &cu1);
     set_key(&tbl, "hodor", &cu2);
     memset(&cu2, 0, sizeof(cu2));
@@ -50,12 +57,12 @@ static void test_nosql_idempotent(CuTest *tc) {
 
 static void test_replay_log_multi(CuTest *tc) {
     db_table tbl = { { 0 }, 0 };
-    db_entry cur = { 6, "HODOR" };
+    db_entry cur = mk_entry("HODOR");
 
     _unlink("binlog.test");
     open_log(&tbl, "binlog.test");
     set_key(&tbl, "hodor", &cur);
-    cur.data = "NOPE!";
+    cur = mk_entry("NOPE!");
     set_key(&tbl, "hodor", &cur);
     fclose(tbl.binlog);
     tbl.binlog = 0;
@@ -69,7 +76,7 @@ static void test_replay_log_multi(CuTest *tc) {
 
 static void test_replay_log(CuTest *tc) {
     db_table tbl = { { 0 }, 0 };
-    db_entry cur = { 6, "HODOR" };
+    db_entry cur = mk_entry("HODOR");
 
     _unlink("binlog.test");
     open_log(&tbl, "binlog.test");
