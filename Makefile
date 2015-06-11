@@ -5,7 +5,7 @@ TESTS = fastcgi-test
 WEBSITE = /var/www/html
 
 ifeq "$(CC)" "clang"
-CFLAGS += -Weverything
+CFLAGS += -Weverything -Wno-padded 
 endif
 
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
@@ -26,7 +26,7 @@ critbit/CuTest.o: critbit/CuTest.c
 	$(CC) $(CFLAGS) -Wno-format-nonliteral -o $@ -c $< $(INCLUDES)
 
 critbit/critbit.o: critbit/critbit.c
-	$(CC) $(CFLAGS) -Wno-padded -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
+	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
 
 counter-cgi: counter.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
