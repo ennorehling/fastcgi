@@ -26,7 +26,7 @@ critbit/CuTest.o: critbit/CuTest.c
 	$(CC) $(CFLAGS) -Wno-format-nonliteral -o $@ -c $< $(INCLUDES)
 
 critbit/critbit.o: critbit/critbit.c
-	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
+	$(CC) $(CFLAGS) -Wno-padded -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
 
 counter-cgi: counter.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
