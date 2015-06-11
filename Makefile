@@ -1,11 +1,12 @@
 PREFIX = /opt
-CFLAGS = -g -Wconversion -Wall -Werror -Wextra -Icritbit -std=c99
+CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99 -Wconversion
 PROGRAMS = counter-cgi prefix-cgi ennodb-cgi
 TESTS = fastcgi-test
 WEBSITE = /var/www/html
 
-#CC = clang
-#CFLAGS += -Weverything
+ifeq "$(CC)" "clang"
+CFLAGS += -Weverything
+endif
 
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
 .SECONDARY: prefix.o
@@ -20,6 +21,12 @@ test: $(TESTS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES)
+
+critbit/CuTest.o: critbit/CuTest.c
+	$(CC) $(CFLAGS) -Wno-format-nonliteral -o $@ -c $< $(INCLUDES)
+
+critbit/critbit.o: critbit/critbit.c
+	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
 
 counter-cgi: counter.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)

@@ -141,7 +141,7 @@ int read_log(db_table *pl, const char *logfile) {
 #else
             munmap(logdata, (size_t)fsize);
 #endif
-            return fsize;
+            return version;
         }
     }
     return 0;
