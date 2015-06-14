@@ -14,7 +14,7 @@ First, clone the git repository:
 
 	git clone https://github.com/badgerman/fastcgi.git
 	cd fastcgi
-	git submodule update
+	git submodule update --init
 
 Now, build and install the code:
 	make
