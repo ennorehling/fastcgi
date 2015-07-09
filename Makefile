@@ -1,6 +1,6 @@
 PREFIX = /opt
 CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99 -Wconversion
-PROGRAMS = counter-cgi prefix-cgi
+PROGRAMS = counter-cgi prefix-cgi bitslap
 TESTS = fastcgi-test
 WEBSITE = /var/www/html
 
@@ -27,6 +27,9 @@ critbit/CuTest.o: critbit/CuTest.c
 
 critbit/critbit.o: critbit/critbit.c
 	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
+
+bitslap: bitslap.o cgiapp.o
+	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
 counter-cgi: counter.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
