@@ -1,6 +1,6 @@
 PREFIX = /opt
 CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99 -Wconversion
-PROGRAMS = counter-cgi prefix-cgi bitslap
+PROGRAMS = counters
 TESTS = fastcgi-test
 WEBSITE = /var/www/html
 
@@ -11,10 +11,10 @@ endif
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
 .SECONDARY: prefix.o
 
-all: $(PROGRAMS) $(TESTS)
+all: $(PROGRAMS)
 
-test: $(TESTS)
-	./fastcgi-test
+test: counters
+	valgrind ./counters
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES)
@@ -28,7 +28,8 @@ critbit/CuTest.o: critbit/CuTest.c
 critbit/critbit.o: critbit/critbit.c
 	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
 
-bitslap: bitslap.o cgiapp.o
+counters: cgiapp.o counters.o
+	@echo building executable $@
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
 counter-cgi: counter.o
@@ -40,7 +41,7 @@ cgiapp.a: cgiapp.o critbit/critbit.o
 %-cgi: %.o cgiapp.a
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
-fastcgi-test: tests.o nosql.o critbit/test_critbit.o critbit/CuTest.o critbit/critbit.o
+fastcgi-test: tests.o critbit/test_critbit.o critbit/CuTest.o critbit/critbit.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:
