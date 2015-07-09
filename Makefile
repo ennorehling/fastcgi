@@ -7,7 +7,7 @@ PROGRAMS = counters
 TESTS =
 
 ifeq "$(CC)" "clang"
-CFLAGS += -Weverything -Wno-padded 
+CFLAGS += -Wno-padded -Wno-sign-conversion -Wno-documentation
 endif
 
 # http://www.thinkplexx.com/learn/howto/build-chain/make-based/prevent-gnu-make-from-always-removing-files-it-says-things-like-rm-or-removing-intermediate-files
@@ -25,10 +25,10 @@ CuTest.o: $(EXT)critbit/CuTest.c
 	$(CC) $(CFLAGS) -Wno-format-nonliteral -o $@ -c $< $(INCLUDES)
 
 critbit.o: $(EXT)critbit/critbit.c
-	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
+	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES)
 
 iniparser.o: $(EXT)iniparser/iniparser.c
-	$(CC) $(CFLAGS) -Wno-conversion -o $@ -c $< $(INCLUDES)
+	$(CC) $(CFLAGS) -Wno-unused-macros -o $@ -c $< $(INCLUDES)
 
 counters: cgiapp.o iniparser.o counters.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
