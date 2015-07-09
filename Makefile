@@ -1,6 +1,8 @@
 EXT=
 PREFIX = /opt
-CFLAGS = -g -Wall -Werror -Wextra -I$(EXT)critbit -std=c99 -Wconversion
+CFLAGS = -Wall -Werror -Wextra -I$(EXT)critbit -std=c99 -Wconversion
+#CFLAGS += -g
+CFLAGS += -O2
 PROGRAMS = counters
 TESTS =
 
