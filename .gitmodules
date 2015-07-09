@@ -1,6 +1,9 @@
-[submodule "c-tap-harness"]
-	path = c-tap-harness
-	url = git://git.eyrie.org/devel/c-tap-harness.git
+[submodule "critbit"]
+	path = critbit
+	url = https://github.com/badgerman/critbit.git
 [submodule "ennodb"]
 	path = ennodb
 	url = https://github.com/badgerman/ennodb.git
+[submodule "iniparser"]
+	path = iniparser
+	url = https://github.com/badgerman/iniparser.git

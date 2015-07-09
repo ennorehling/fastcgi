@@ -1,2 +1,3 @@
 #!/bin/sh
-echo "0 tests."
+set -e
+valgrind ./counters

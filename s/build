@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+test -d .git
+git submodule update
+make
+

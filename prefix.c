@@ -33,9 +33,9 @@ static void signal_handler(int sig) {
 
 static const char *wordlist = "/usr/share/dict/words";
 
-static int init(void * self)
+static int init(app * self)
 {
-    payload *pl = (payload *)self;
+    payload *pl = (payload *)self->data;
     FILE *F;
     assert(self);
     signal(SIGINT, signal_handler);
@@ -65,13 +65,13 @@ static const char * get_prefix(const char *path) {
     return result ? result+1 : 0;
 }
 
-static int process(void *self, FCGX_Request *req)
+static int process(app *self, FCGX_Request *req)
 {
     const char * types[] = { "text/plain", "application/json" };
-    const void * results[MAXRESULTS];
+    void * results[MAXRESULTS];
     const char *script, *prefix, *accept, *type;
     int nresults, format = FORMAT_PLAIN;
-    payload *pl = (payload *)self;
+    payload *pl = (payload *)self->data;
     assert(self && req);
 
     script = FCGX_GetParam("PATH_INFO", req->envp);
