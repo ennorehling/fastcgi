@@ -28,7 +28,7 @@ critbit.o: $(EXT)critbit/critbit.c
 	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
 
 iniparser.o: $(EXT)iniparser/iniparser.c
-	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
+	$(CC) $(CFLAGS) -Wno-conversion -o $@ -c $< $(INCLUDES)
 
 counters: cgiapp.o iniparser.o counters.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
