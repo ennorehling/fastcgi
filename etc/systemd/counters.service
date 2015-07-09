@@ -1,0 +1,14 @@
+[Unit]
+Description=Counters Service
+After=syslog.target
+
+[Service]
+Type=forking
+# The PID file is optional, but recommended in the manpage
+# "so that systemd can identify the main process of the daemon"
+PIDFile=/var/run/counters.pid
+ExecStart=/usr/bin/spawn-fcgi -u www-data -g www-data -P /var/run/counters.pid -s /var/run/counters.socket /opt/bin/counters
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

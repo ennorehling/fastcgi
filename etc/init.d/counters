@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          ennodb
+# Provides:          counters
 # Required-Start:    $remote_fs
 # Required-Stop:     $remote_fs
 # Should-Start:
@@ -14,10 +14,10 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 PREFIX="/opt"
-NAME="ennodb"
+NAME="counters"
 SPAWN_FCGI="/usr/bin/spawn-fcgi"
 DAEMON="$PREFIX/bin/$NAME"
-DESC="EnnoDB NoSQL server"
+DESC="Counters server"
 PIDFILE="/var/run/$NAME.pid"
 
 test -x $SPAWN_FCGI || exit 0
@@ -36,7 +36,8 @@ FCGI_SOCKET_GROUP="www-data"
 
 # Default options, these can be overriden by the information
 # at /etc/default/$NAME
-DAEMON_OPTS="/etc/ennodb/ennodb.ini"
+# DAEMON_OPTS="/etc/counters/counters.ini"
+DAEMON_OPTS=""
 
 ENV_VARS="PATH='$PATH'" # We reset the environ for spawn-fcgi, but we use the
                         # contents of this variable as a prefix when calling it

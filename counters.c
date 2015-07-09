@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define unused(a) (void)a;
 
@@ -22,10 +23,31 @@ static void done(struct app *self) {
 }
 
 static int process(struct app *self, FCGX_Request *req) {
+    const char *method, *path, *message = "OK";
     int *counter;
+    int status;
+
+    method = FCGX_GetParam("REQUEST_METHOD", req->envp);
+    path = FCGX_GetParam("PATH_INFO", req->envp);
     assert(self && req);
     counter = (int *)self->data;
-    ++*counter;
+    if (method[0]=='G') {
+        if (strstr(path, "death.php")) {
+            // special-case hack
+            ++*counter;
+        }
+        status = 200;
+    } else if (method[0]=='P') {
+        ++*counter;
+        status = 200;
+    } else {
+        message = "Method Not Allowed";
+        status = 405;
+    }
+    FCGX_FPrintF(req->out,
+                 "Status: %d %s\r\n"
+                 "Content-Type: text/plain\r\n"
+                 "\r\n%d\n", status, message, *counter);
     return 0;
 }
 

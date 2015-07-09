@@ -1,7 +1,8 @@
+EXT=
 PREFIX = /opt
-CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99 -Wconversion
+CFLAGS = -g -Wall -Werror -Wextra -I$(EXT)critbit -std=c99 -Wconversion
 PROGRAMS = counters
-TESTS = fastcgi-test
+TESTS =
 WEBSITE = /var/www/html
 
 ifeq "$(CC)" "clang"
@@ -19,37 +20,31 @@ all: $(PROGRAMS)
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES)
 
-critbit/CuTest.o: critbit/CuTest.c
+CuTest.o: $(EXT)critbit/CuTest.c
 	$(CC) $(CFLAGS) -Wno-format-nonliteral -o $@ -c $< $(INCLUDES)
 
-critbit/critbit.o: critbit/critbit.c
+critbit.o: $(EXT)critbit/critbit.c
 	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
 
 counters: cgiapp.o counters.o
-	@echo building executable $@
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
 counter-cgi: counter.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
-cgiapp.a: cgiapp.o critbit/critbit.o
+cgiapp.a: cgiapp.o critbit.o
 	$(AR) -q $@ $^
 
 %-cgi: %.o cgiapp.a
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
-fastcgi-test: tests.o critbit/test_critbit.o critbit/CuTest.o critbit/critbit.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
 clean:
-	rm -f .*~ *~ *.a *.o critbit/*.o $(PROGRAMS) $(TESTS)
+	rm -f .*~ *~ *.a *.o $(PROGRAMS) $(TESTS)
 
 install: $(PROGRAMS)
 	sudo mkdir -p $(PREFIX)/bin
-	install html/*.* $(WEBSITE)
 	sudo install $(PROGRAMS) $(PREFIX)/bin
-	sudo install etc/init.d/* /etc/init.d/
-	sudo install etc/nginx/* /etc/nginx/
-
-check: $(PROGRAMS)
-	cd tests && runtests -l TESTS
+	[ -d /etc/init.d ] && sudo install -C etc/init.d/* /etc/init.d/
+	[ -d /etc/systemd ] && sudo install -C etc/systemd/* `pkg-config systemd --variable=systemdsystemunitdir`
+	sudo mkdir -p $(PREFIX)/share/doc/fastcgi/examples
+	sudo install doc/examples/* $(PREFIX)/share/doc/fastcgi/examples/
