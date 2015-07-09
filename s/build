@@ -3,4 +3,4 @@ set -e
 test -d .git
 git submodule update
 make
-make test
+

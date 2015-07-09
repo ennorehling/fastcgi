@@ -7,7 +7,7 @@ script:
 - s/runtests
 before_install:
 - sudo apt-get update -qq
-- sudo apt-get install -qq libfcgi-dev autotools-dev
+- sudo apt-get install -qq libfcgi-dev valgrind
 os:
 - linux
 - osx

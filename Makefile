@@ -13,9 +13,6 @@ endif
 
 all: $(PROGRAMS)
 
-test: counters
-	valgrind ./counters
-
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCLUDES)
 
