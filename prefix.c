@@ -68,7 +68,7 @@ static const char * get_prefix(const char *path) {
 static int process(void *self, FCGX_Request *req)
 {
     const char * types[] = { "text/plain", "application/json" };
-    const void * results[MAXRESULTS];
+    void * results[MAXRESULTS];
     const char *script, *prefix, *accept, *type;
     int nresults, format = FORMAT_PLAIN;
     payload *pl = (payload *)self;

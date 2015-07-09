@@ -1,16 +1,16 @@
 language: c
 compiler:
-  - gcc
-  - clang
+- gcc
+- clang
 script:
-  - s/build
-  - s/runtests
+- s/build
+- s/runtests
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq libfcgi-dev autotools-dev
+- sudo apt-get update -qq
+- sudo apt-get install -qq libfcgi-dev autotools-dev
 os:
-  - linux
-  - osx
+- linux
+- osx
 notifications:
   slack:
-      secure: F89aXLWaE125PaJIlETv12jT4EfH6wLXJmGCPZzrN3OcLn2ahDWqjwuzR7lOEDf2nAISmeMPyDZMhEHXLNHAE5qP6lg9yliYQw5hzGmDK9m1xUq/pPEne/b2Y7K3my1mkRZ6n3asbHgSmBWAfCIk1JN8R5Rv+rmbLuWLc+zofts=
+    secure: Idp0W+qgj1sH7JwQG4Qhc+fUHqWEK4IBd3fZWvKmDtAXfq2Q0N/SFp+TuuEd69aVvAJU6bIupmw4Gr2z1Rn1LSb94bmC+s6CtGinh3zRX9WFM7nnLPoO8Rxt1cTqh88C9cAFt1L2sLCb2Tem0q7YV4qzuUqilIyxaqa6iP0KGv8=
