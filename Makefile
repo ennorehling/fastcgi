@@ -1,6 +1,6 @@
 PREFIX = /opt
 CFLAGS = -g -Wall -Werror -Wextra -Icritbit -std=c99 -Wconversion
-PROGRAMS = counter-cgi prefix-cgi ennodb-cgi
+PROGRAMS = counter-cgi prefix-cgi
 TESTS = fastcgi-test
 WEBSITE = /var/www/html
 
@@ -34,9 +34,6 @@ counter-cgi: counter.o
 cgiapp.a: cgiapp.o critbit/critbit.o
 	$(AR) -q $@ $^
 
-ennodb-cgi: ennodb.o nosql.o cgiapp.a
-	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
-
 %-cgi: %.o cgiapp.a
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
@@ -44,7 +41,7 @@ fastcgi-test: tests.o nosql.o critbit/test_critbit.o critbit/CuTest.o critbit/cr
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:
-	rm -f *~ *.a *.o critbit/*.o $(PROGRAMS) $(TESTS)
+	rm -f .*~ *~ *.a *.o critbit/*.o $(PROGRAMS) $(TESTS)
 
 install: $(PROGRAMS)
 	sudo mkdir -p $(PREFIX)/bin
