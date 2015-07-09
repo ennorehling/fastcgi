@@ -1,6 +1,6 @@
 EXT=
 PREFIX = /opt
-CFLAGS = -Wall -Werror -Wextra -I$(EXT)critbit -std=c99 -Wconversion
+CFLAGS = -Wall -Werror -Wextra -I$(EXT)iniparser -I$(EXT)critbit -Wconversion
 #CFLAGS += -g
 CFLAGS += -O2
 PROGRAMS = counters
@@ -27,10 +27,13 @@ CuTest.o: $(EXT)critbit/CuTest.c
 critbit.o: $(EXT)critbit/critbit.c
 	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
 
-counters: cgiapp.o counters.o
+iniparser.o: $(EXT)iniparser/iniparser.c
+	$(CC) $(CFLAGS) -Wno-sign-conversion -o $@ -c $< $(INCLUDES)
+
+counters: cgiapp.o iniparser.o counters.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
-cgiapp.a: cgiapp.o critbit.o
+cgiapp.a: cgiapp.o critbit.o iniparser.o
 	$(AR) -q $@ $^
 
 %-cgi: %.o cgiapp.a

@@ -1,17 +1,47 @@
 #include "cgiapp.h"
 
+#include <iniparser.h>
+
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #define unused(a) (void)a;
 
-static int init(struct app * self) {
-    int * counter;
+typedef struct app_data {
+    int counter;
+    char *dbname;
+} app_data;
+
+static const char *inifile;
+
+static void reload_config(app *self) {
+    dictionary *ini = iniparser_new(inifile);
+    app_data *data;
+    assert(self && self->data);
+
+    data = (app_data *)self->data;
+    if (ini) {
+        const char *str;
+        str = iniparser_getstring(ini, "counters:database", 0);
+        if (str) {
+            data->dbname = strdup(str);
+        }
+        iniparser_free(ini);
+    }
+}
+
+static int init(app * self) {
+    app_data *data;
     assert(self);
-    counter = (int *)malloc(sizeof(int));
-    *counter = 0;
-    self->data = counter;
+    data = (app_data *)malloc(sizeof(app_data));
+    data->counter = 0;
+    data->dbname = 0;
+    self->data = data;
+    if (inifile) {
+        reload_config(self);
+    }
     return 0;
 }
 
@@ -57,6 +87,8 @@ static struct app the_app = {
 
 struct app * create_app(int argc, char ** argv) {
     assert(argc>=0);
-    unused(argv);
+    if (argc>1) {
+        inifile = argv[1];
+    }
     return &the_app;
 }
