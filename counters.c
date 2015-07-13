@@ -2,9 +2,17 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 #define unused(a) (void)a;
+
+static void signal_handler(int sig);
+static void db_write(const char *filename);
+
+static const char * dbname = "counters.txt";
+static const char * version = "counters version 1.0 (c) Enno Rehling 2015";
 
 static int init(struct app * self) {
     int * counter;
@@ -12,14 +20,16 @@ static int init(struct app * self) {
     counter = (int *)malloc(sizeof(int));
     *counter = 0;
     self->data = counter;
+    signal(SIGINT, signal_handler);
+    signal(SIGHUP, signal_handler);
     return 0;
 }
 
 static void done(struct app *self) {
-    int *counter;
     assert(self);
-    counter = (int *)self->data;
-    free(counter);
+    
+    db_write(dbname);
+    free(self->data);
 }
 
 static int process(struct app *self, FCGX_Request *req) {
@@ -48,6 +58,9 @@ static int process(struct app *self, FCGX_Request *req) {
                  "Status: %d %s\r\n"
                  "Content-Type: text/plain\r\n"
                  "\r\n%d\n", status, message, *counter);
+    if ((*counter & 0xF)==0) {
+        db_write(dbname);
+    }
     return 0;
 }
 
@@ -55,8 +68,45 @@ static struct app the_app = {
     0, init, done, process
 };
 
+static void db_write(const char *filename) {
+    FILE *F = fopen(filename, "w");
+    int *counter = (int *)the_app.data;
+    if (F && counter) {
+        fwrite(counter, sizeof(int), 1, F);
+        fclose(F);
+    }
+}
+
+static void db_read(const char *filename) {
+    FILE *F = fopen(filename, "r");
+    int *counter = (int *)the_app.data;
+    if (F && counter) {
+        fread(counter, sizeof(int), 1, F);
+        fclose(F);
+    }
+}
+
+static void signal_handler(int sig) {
+    if (sig==SIGINT) {
+        printf("received SIGINT\n");
+        done(&the_app);
+        abort();
+    }
+    if (sig==SIGHUP) {
+        printf("received SIGHUP\n");
+        db_write(dbname);
+    }
+}
+
 struct app * create_app(int argc, char ** argv) {
+    int i;
     assert(argc>=0);
-    unused(argv);
+    for(i=1;i!=argc;++i) {
+        if (strcmp(argv[i], "-v")==0) {
+            fputs(version, stderr);
+        }
+        else dbname = argv[i];
+    }
+    db_read(dbname);
     return &the_app;
 }
