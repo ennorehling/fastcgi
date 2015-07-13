@@ -10,8 +10,9 @@
 
 static void signal_handler(int sig);
 static void db_write(const char *filename);
+static void db_read(const char *filename);
 
-static const char * dbname = "counters.txt";
+static const char * dbname = "counters.db";
 static const char * version = "counters version 1.0 (c) Enno Rehling 2015";
 
 static int init(struct app * self) {
@@ -20,6 +21,7 @@ static int init(struct app * self) {
     counter = (int *)malloc(sizeof(int));
     *counter = 0;
     self->data = counter;
+    db_read(dbname);
     signal(SIGINT, signal_handler);
     signal(SIGHUP, signal_handler);
     return 0;
@@ -107,6 +109,5 @@ struct app * create_app(int argc, char ** argv) {
         }
         else dbname = argv[i];
     }
-    db_read(dbname);
     return &the_app;
 }

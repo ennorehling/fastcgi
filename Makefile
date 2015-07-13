@@ -1,8 +1,8 @@
 EXT=
 PREFIX = /opt
-CFLAGS = -g -Wall -Werror -Wextra -I$(EXT)critbit -std=c99 -Wconversion
+CFLAGS = -g -Wall -Werror -Wextra -std=c99 -Wconversion
 PROGRAMS = counters
-TESTS =
+WEBSITE = /var/www/html
 
 ifeq "$(CC)" "clang"
 CFLAGS += -Weverything -Wno-padded 
@@ -28,17 +28,16 @@ critbit.o: $(EXT)critbit/critbit.c
 counters: cgiapp.o counters.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
-cgiapp.a: cgiapp.o critbit.o
-	$(AR) -q $@ $^
-
-%-cgi: %.o cgiapp.a
+%-cgi: %.o cgiapp.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfcgi $(LDFLAGS)
 
 clean:
-	rm -f .*~ *~ *.a *.o $(PROGRAMS) $(TESTS)
+	rm -f *~ *.a *.o $(PROGRAMS)
 
 install: $(PROGRAMS)
 	sudo mkdir -p $(PREFIX)/bin
+	sudo mkdir -p /var/lib/fastcgi
+	sudo chown www-data.www-data /var/lib/fastcgi
 	sudo install $(PROGRAMS) $(PREFIX)/bin
 	[ -d /etc/init.d ] && sudo install -C etc/init.d/* /etc/init.d/
 	[ -d /etc/systemd ] && sudo install -C etc/systemd/* `pkg-config systemd --variable=systemdsystemunitdir`
